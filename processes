@@ -1,0 +1,11 @@
+# Declare processes
+DECOMPOSE_PROCESSES=( 'run-playbook' )
+
+_decompose-process-run-playbook() {
+  echo "Running playbook"
+}
+_decompose-process-run-playbook_help() {
+  echo "  Run playbook"
+}
+
+# vim:syntax=sh
