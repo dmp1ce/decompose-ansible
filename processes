@@ -1,11 +1,21 @@
 # Declare processes
-DECOMPOSE_PROCESSES=( 'run-playbook' )
+DECOMPOSE_PROCESSES=( 'ansible' 'run-playbook' )
 
 _decompose-process-run-playbook() {
   echo "Running playbook"
 }
 _decompose-process-run-playbook_help() {
   echo "  Run playbook"
+}
+
+_decompose-process-ansible() {
+  echo "Run ansible using 'hosts' file as inventory"
+  cd $(_decompose-project-root)
+  ansible -i hosts "$@"
+}
+_decompose-process-ansible_help() {
+  echo "  Run playbook. All parameters are passed to 'ansible' command."
+  echo "    EX: 'decompose ansible host1:host2 -m ping'"
 }
 
 # vim:syntax=sh
