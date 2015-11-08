@@ -1,0 +1,7 @@
+---
+ansible_ssh_host: 111.111.111.111
+ansible_ssh_user: maintenance
+maintenance_keys: me_key.pub
+my_users:
+  - name: me_user
+    key_files: me_key.pub

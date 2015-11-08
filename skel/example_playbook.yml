@@ -1,0 +1,14 @@
+---
+# Playbook example
+
+- hosts: my_hosts
+  become: yes
+  vars:
+    some_variable: "variable value"
+  tasks:
+    - name: Test connection
+      ping: 
+  - name: Generate authorized_keys for each user
+      local_action: command ./generate_authorized_keys {{ansible_hostname}} {{item.name}} {{item.key_files}}
+      become: no
+      with_items: "{{ my_users }}"

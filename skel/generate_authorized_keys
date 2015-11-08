@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Generate authorized keys
+
+#
+# Param 1: host name
+# Param 2: user name
+# Param 3+: public key files
+
+# TODO check that 1, 2 and 3 parameters exist
+
+mkdir -p authorized_keys/$1
+
+echo -n > authorized_keys/$1/$2
+
+for i in ${@:3} ; do cat public_keys/$i >> authorized_keys/$1/$2; done
