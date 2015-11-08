@@ -2,19 +2,39 @@
 DECOMPOSE_PROCESSES=( 'ansible' 'run-playbook' )
 
 _decompose-process-run-playbook() {
-  echo "Running playbook"
+  local playbook="$(realpath $1)"
+  local host_pattern="$2"
+  local additional_params="${@:3}"
+  if [ ! -f "$playbook" ]; then
+    echo "Please specify a playbook file for the first parameter."
+    exit 1
+  fi
+
+  if [ -z "$host_pattern" ]; then
+    echo "Please supply a host pattern for the second parameter."
+    echo -n "Valid hosts are:"
+    ansible-playbook "$playbook" -i "$(_decompose-project-root)/hosts" \
+      --list-hosts
+    echo "Also see 'http://docs.ansible.com/ansible/intro_patterns.html'"
+    exit 1
+  fi
+
+  ansible-playbook "$playbook" -i "$(_decompose-project-root)/hosts" \
+    --limit="$host_pattern" $additional_params
 }
 _decompose-process-run-playbook_help() {
-  echo "  Run playbook"
+  echo "  Run specified playbook."
+  echo "    Param 1: playbook file"
+  echo "    Param 2: host pattern"
+  echo "    Param 3+: passed to 'ansible-playbook' command"
 }
 
 _decompose-process-ansible() {
-  echo "Run ansible using 'hosts' file as inventory"
   cd $(_decompose-project-root)
   ansible -i hosts "$@"
 }
 _decompose-process-ansible_help() {
-  echo "  Run playbook. All parameters are passed to 'ansible' command."
+  echo "  Run ansible. All parameters are passed to 'ansible' command."
   echo "    EX: 'decompose ansible host1:host2 -m ping'"
 }
 
