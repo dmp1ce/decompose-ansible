@@ -1,5 +1,9 @@
+# Include common processes
+source $(_decompose-project-root)/.decompose/environment/lib/common/processes
+
 # Declare processes
-DECOMPOSE_PROCESSES=( 'ansible' 'run-playbook' )
+DECOMPOSE_PROCESSES=( 'ansible' 'run-playbook'
+  "${DECOMPOSE_COMMON_PROCESSES[@]}" )
 
 _decompose-process-run-playbook() {
   local playbook="$(realpath $1)"
