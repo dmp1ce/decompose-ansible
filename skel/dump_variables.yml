@@ -1,0 +1,7 @@
+---
+- hosts: all
+  tasks:
+    - name: Dump all vars
+      template: src=templates/dumpall.j2 dest=/tmp/ansible.all
+    - name: Fetch vars
+      fetch: src=/tmp/ansible.all dest="var_dump/{{inventory_hostname}}"
