@@ -1,45 +1,80 @@
+#!/bin/bash
+
 # Include common processes
-source $(_decompose-project-root)/.decompose/environment/lib/common/processes
+# shellcheck disable=SC1090
+source "$(_decompose-project-root)"/.decompose/environment/lib/common/processes
 
 # Declare processes
+# shellcheck disable=SC2034
 DECOMPOSE_PROCESSES=( 'ansible' 'run-playbook'
   "${DECOMPOSE_COMMON_PROCESSES[@]}" )
 
 _decompose-process-run-playbook() {
-  local playbook="$(realpath $1)"
-  local host_pattern="$2"
-  local additional_params="${@:3}"
-  if [ ! -f "$playbook" ]; then
-    echo "Please specify a playbook file for the first parameter."
+  local inventory; inventory="$1"
+  if [ ! -f "$inventory" ]; then
+    echo "Please specify an inventory file for the first parameter."
+    _decompose-process-run-playbook_help
     exit 1
   fi
 
+  local playbook; playbook="$2"
+  if [ ! -f "$playbook" ]; then
+    echo "Please specify a playbook file for the second parameter."
+    _decompose-process-run-playbook_help
+    exit 1
+  fi
+
+  local host_pattern; host_pattern="$3"
   if [ -z "$host_pattern" ]; then
     echo "Please supply a host pattern for the second parameter."
     echo -n "Valid hosts are:"
-    ansible-playbook "$playbook" -i "$(_decompose-project-root)/hosts" \
+    ansible-playbook "$playbook" -i "$(_decompose-project-root)/$inventory" \
       --list-hosts
     echo "Also see 'http://docs.ansible.com/ansible/intro_patterns.html'"
     exit 1
   fi
 
-  ansible-playbook "$playbook" -i "$(_decompose-project-root)/hosts" \
-    --limit="$host_pattern" $additional_params
+  local additional_params; additional_params=(${*:4})
+
+  ansible-playbook "$playbook" -i "$(_decompose-project-root)/$inventory" \
+    --limit="$host_pattern" "${additional_params[@]}"
 }
 _decompose-process-run-playbook_help() {
   echo "  Run specified playbook."
-  echo "    Param 1: playbook file"
-  echo "    Param 2: host pattern"
-  echo "    Param 3+: passed to 'ansible-playbook' command"
+  echo "    Param 1: inventory file"
+  echo "    Param 2: playbook file"
+  echo "    Param 3: host pattern"
+  echo "    Param 4+: passed to 'ansible-playbook' command"
 }
 
 _decompose-process-ansible() {
-  cd $(_decompose-project-root)
-  ansible -i hosts "$@"
+  local inventory; inventory="$1"
+  if [ ! -f "$inventory" ]; then
+    echo "Please specify an inventory file for the first parameter."
+    _decompose-process-ansible_help
+    exit 1
+  fi
+
+  local host_pattern; host_pattern="$2"
+  if [ -z "$host_pattern" ]; then
+    echo "Please supply a host pattern for the second parameter."
+    echo -n "Valid hosts are:"
+    ansible -i "$inventory" "" --list-hosts
+    echo "Also see 'http://docs.ansible.com/ansible/intro_patterns.html'"
+    exit 1
+  fi
+
+  local additional_params; additional_params=(${*:2})
+
+  ansible -i "$inventory" "${additional_params[@]}"
 }
 _decompose-process-ansible_help() {
   echo "  Run ansible. All parameters are passed to 'ansible' command."
-  echo "    EX: 'decompose ansible host1:host2 -m ping'"
+  echo "    Param 1: inventory filename"
+  echo "    Param 2: host pattern"
+  echo "    Param 3+: passed to 'ansible' command"
+  echo ""
+  echo "    EX: 'decompose ansible staging host1 -m ping'"
 }
 
 # vim:syntax=sh
