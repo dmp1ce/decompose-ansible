@@ -28,7 +28,7 @@ _decompose-process-run-playbook() {
   if [ -z "$host_pattern" ]; then
     echo "Please supply a host pattern for the second parameter."
     echo -n "Valid hosts are:"
-    ansible-playbook "$playbook" -i "$(_decompose-project-root)/$inventory" \
+    ansible-playbook --vault-password-file=~/.vault_pass.txt "$playbook" -i "$(_decompose-project-root)/$inventory" \
       --list-hosts
     echo "Also see 'http://docs.ansible.com/ansible/intro_patterns.html'"
     exit 1
@@ -36,7 +36,7 @@ _decompose-process-run-playbook() {
 
   local additional_params; additional_params=(${*:4})
 
-  ansible-playbook "$playbook" -i "$(_decompose-project-root)/$inventory" \
+  ansible-playbook --vault-password-file=~/.vault_pass.txt "$playbook" -i "$(_decompose-project-root)/$inventory" \
     --limit="$host_pattern" "${additional_params[@]}"
 }
 _decompose-process-run-playbook_help() {
@@ -59,14 +59,14 @@ _decompose-process-ansible() {
   if [ -z "$host_pattern" ]; then
     echo "Please supply a host pattern for the second parameter."
     echo -n "Valid hosts are:"
-    ansible -i "$inventory" "" --list-hosts
+    ansible --vault-password-file=~/.vault_pass.txt -i "$inventory" "" --list-hosts
     echo "Also see 'http://docs.ansible.com/ansible/intro_patterns.html'"
     exit 1
   fi
 
   local additional_params; additional_params=(${*:2})
 
-  ansible -i "$inventory" "${additional_params[@]}"
+  ansible --vault-password-file=~/.vault_pass.txt -i "$inventory" "${additional_params[@]}"
 }
 _decompose-process-ansible_help() {
   echo "  Run ansible. All parameters are passed to 'ansible' command."
