@@ -1,0 +1,3 @@
+#!/bin/bash
+
+vault_pass_file=~/.vault_pass.txt
