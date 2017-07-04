@@ -6,7 +6,7 @@ source "$(_decompose-project-root)"/.decompose/environment/lib/common/processes
 
 # Declare processes
 # shellcheck disable=SC2034
-DECOMPOSE_PROCESSES=( 'ansible' 'run-playbook'
+DECOMPOSE_PROCESSES=( 'ansible' 'run-playbook' 'encrypt-string' 'decrypt-string'
   "${DECOMPOSE_COMMON_PROCESSES[@]}" )
 
 _decompose-process-run-playbook() {
@@ -28,7 +28,7 @@ _decompose-process-run-playbook() {
   if [ -z "$host_pattern" ]; then
     echo "Please supply a host pattern for the second parameter."
     echo -n "Valid hosts are:"
-    ansible-playbook --vault-password-file="$vault_pass_file" "$playbook" -i "$(_decompose-project-root)/$inventory" \
+    ansible-playbook --vault-password-file="$VAULT_PASS_FILE" "$playbook" -i "$(_decompose-project-root)/$inventory" \
       --list-hosts
     echo "Also see 'http://docs.ansible.com/ansible/intro_patterns.html'"
     exit 1
@@ -36,7 +36,7 @@ _decompose-process-run-playbook() {
 
   local additional_params; additional_params=(${*:4})
 
-  ansible-playbook --vault-password-file="$vault_pass_file" "$playbook" -i "$(_decompose-project-root)/$inventory" \
+  ansible-playbook --vault-password-file="$VAULT_PASS_FILE" "$playbook" -i "$(_decompose-project-root)/$inventory" \
     --limit="$host_pattern" "${additional_params[@]}"
 }
 _decompose-process-run-playbook_help() {
@@ -59,14 +59,14 @@ _decompose-process-ansible() {
   if [ -z "$host_pattern" ]; then
     echo "Please supply a host pattern for the second parameter."
     echo -n "Valid hosts are:"
-    ansible --vault-password-file="$vault_pass_file" -i "$inventory" "" --list-hosts
+    ansible --vault-password-file="$VAULT_PASS_FILE" -i "$inventory" "" --list-hosts
     echo "Also see 'http://docs.ansible.com/ansible/intro_patterns.html'"
     exit 1
   fi
 
   local additional_params; additional_params=(${*:2})
 
-  ansible --vault-password-file="$vault_pass_file" -i "$inventory" "${additional_params[@]}"
+  ansible --vault-password-file="$VAULT_PASS_FILE" -i "$inventory" "${additional_params[@]}"
 }
 _decompose-process-ansible_help() {
   echo "  Run ansible. All parameters are passed to 'ansible' command."
@@ -75,6 +75,47 @@ _decompose-process-ansible_help() {
   echo "    Param 3+: passed to 'ansible' command"
   echo ""
   echo "    EX: 'decompose ansible staging host1 -m ping'"
+}
+
+_decompose-process-encrypt-string() {
+  local s; s="$1"
+  if [ -z "$s" ]; then
+    echo "Please specify a string for encryption."
+    _decompose-process-encrypt-string_help
+    exit 1
+  fi
+
+  local additional_params; additional_params=(${*:2})
+
+  ansible-vault --vault-password-file="$VAULT_PASS_FILE" encrypt_string "$1" "${additional_params[@]}"
+}
+_decompose-process-encrypt-string_help() {
+  echo "  Encrypt a string for use in variable file"
+  echo "    EX: 'decompose encrypt-string password'"
+}
+
+_decompose-process-decrypt-string() {
+  local additional_params; additional_params=(${*:1})
+
+  echo "Please enter ciphertext string to decrypt:"
+
+  cipher=$(cat)
+  cipher_head=$(echo "$cipher" | head -n 1)
+  cipher_body=$(echo "$cipher" | tail -n +2)
+  cipher_body_trimmed=$(while read -r line; do
+    echo -n "$line" | sed 's/^ *//;s/ *$//'
+  done <<< "$cipher_body")
+
+  t=$(mktemp)
+  echo -e "$cipher_head\n$cipher_body_trimmed" > "$t"
+
+  echo ""
+  ansible-vault --vault-password-file="$VAULT_PASS_FILE" decrypt "$t" --output=/dev/stderr "${additional_params[@]}" > /dev/null
+  echo ""
+}
+_decompose-process-decrypt-string_help() {
+  echo "  Decrypt a string for used in variable file"
+  echo "    EX: 'decompose decrypt-string'"
 }
 
 # vim:syntax=sh
