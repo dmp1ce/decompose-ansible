@@ -101,13 +101,14 @@ _decompose-process-decrypt-string() {
 
   cipher=$(cat)
   cipher_head=$(echo "$cipher" | head -n 1)
+  cipher_head_trimmed=$(echo "$cipher_head" | sed 's/^ *//;s/ *$//')
   cipher_body=$(echo "$cipher" | tail -n +2)
   cipher_body_trimmed=$(while read -r line; do
     echo -n "$line" | sed 's/^ *//;s/ *$//'
   done <<< "$cipher_body")
 
   t=$(mktemp)
-  echo -e "$cipher_head\n$cipher_body_trimmed" > "$t"
+  echo -e "$cipher_head_trimmed\n$cipher_body_trimmed" > "$t"
 
   echo ""
   ansible-vault --vault-password-file="$VAULT_PASS_FILE" decrypt "$t" --output=/dev/stderr "${additional_params[@]}" > /dev/null
