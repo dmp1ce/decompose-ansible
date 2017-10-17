@@ -12,6 +12,7 @@ DECOMPOSE_PROCESSES=( 'ansible' 'run-playbook' 'encrypt-string' 'decrypt-string'
   "${DECOMPOSE_COMMON_PROCESSES[@]}" )
 
 _decompose-process-run-playbook() {
+  __check_requirements || exit 1
   local inventory; inventory="$1"
   if [ ! -f "$inventory" ]; then
     echo "Please specify an inventory file for the first parameter."
@@ -50,6 +51,7 @@ _decompose-process-run-playbook_help() {
 }
 
 _decompose-process-ansible() {
+  __check_requirements || exit 1
   local inventory; inventory="$1"
   if [ ! -f "$inventory" ]; then
     echo "Please specify an inventory file for the first parameter."
@@ -80,6 +82,7 @@ _decompose-process-ansible_help() {
 }
 
 _decompose-process-encrypt-string() {
+  __check_requirements || exit 1
   local s; s="$1"
   if [ -z "$s" ]; then
     echo "Please specify a string for encryption."
@@ -97,6 +100,7 @@ _decompose-process-encrypt-string_help() {
 }
 
 _decompose-process-decrypt-string() {
+  __check_requirements || exit 1
   local additional_params; additional_params=(${*:1})
 
   echo "Please enter ciphertext string to decrypt:"
@@ -122,6 +126,7 @@ _decompose-process-decrypt-string_help() {
 }
 
 _decompose-process-ansible-vault-file() {
+  __check_requirements || exit 1
   local c; c="$1"
   if [ -z "$c" ]; then
     echo "Missing command for ansible-vault"
@@ -214,5 +219,21 @@ _decompose-process-view-encrypted-file_help() {
 #
 #  ansible-vault --vault-password-file="$VAULT_PASS_FILE" create "$f" "${additional_params[@]}"
 #}
+
+__check_requirements() {
+  local return_code
+  local checks=('ansible' 'ansible-playbook' 'ansible-vault')
+
+  local check; for check in ${checks[@]}; do
+    which $check >/dev/null 2>&1
+    if [ "$?" -ne "0" ]; then
+      echo "'$check' command is missing"
+      return_code=1
+      if [ "$check" == "which" ]; then break; fi
+    fi
+  done
+
+  return $return_code
+}
 
 # vim:syntax=sh
