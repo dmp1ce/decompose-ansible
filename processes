@@ -45,7 +45,7 @@ _decompose-process-run-playbook() {
     exit 1
   fi
 
-  local additional_params; additional_params=("${*:4}")
+  local additional_params; additional_params=("${@:4}")
   ansible-playbook --vault-password-file="$VAULT_PASS_FILE" "$playbook" -i "$(_decompose-project-root)/$inventory" \
     --limit="$host_pattern" "${additional_params[@]}"
 }
@@ -75,7 +75,7 @@ _decompose-process-ansible() {
     exit 1
   fi
 
-  local additional_params; additional_params=("${*:2}")
+  local additional_params; additional_params=("${@:2}")
   ansible --vault-password-file="$VAULT_PASS_FILE" -i "$inventory" "${additional_params[@]}"
 }
 _decompose-process-ansible_help() {
@@ -96,7 +96,7 @@ _decompose-process-encrypt-string() {
     exit 1
   fi
 
-  local additional_params; additional_params=("${*:2}")
+  local additional_params; additional_params=("${@:2}")
   ansible-vault --vault-password-file="$VAULT_PASS_FILE" encrypt_string "$1" "${additional_params[@]}"
 }
 _decompose-process-encrypt-string_help() {
@@ -106,7 +106,7 @@ _decompose-process-encrypt-string_help() {
 
 _decompose-process-decrypt-string() {
   __check_requirements || exit 1
-  local additional_params; additional_params=("${*:1}")
+  local additional_params; additional_params=("${@:1}")
 
   echo "Please enter ciphertext string to decrypt:"
 
@@ -144,7 +144,7 @@ _decompose-process-ansible-vault-file() {
     return 1
   fi
 
-  local additional_params; additional_params=("${*:3}")
+  local additional_params; additional_params=("${@:3}")
 
   case "$c" in
     "create" | "edit" | "encrypt" | "decrypt" | "view")
@@ -220,7 +220,7 @@ _decompose-process-view-encrypted-file_help() {
 #    _decompose-process-create-encrypted-file_help
 #    exit 1
 #  fi
-#  local additional_params; additional_params=(${*:2})
+#  local additional_params; additional_params=(${@:2})
 #
 #  ansible-vault --vault-password-file="$VAULT_PASS_FILE" create "$f" "${additional_params[@]}"
 #}
