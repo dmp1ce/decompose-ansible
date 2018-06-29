@@ -8,8 +8,16 @@ source "$(_decompose-project-root)"/.decompose/environment/lib/common/processes
 # shellcheck disable=SC2034
 DECOMPOSE_PROCESSES=( 'ansible' 'run-playbook' 'encrypt-string' 'decrypt-string'
   'create-encrypted-file' 'edit-encrypted-file' 'decrypt-file'
-  'view-encrypted-file' 'encrypt-file'
+  'view-encrypted-file' 'encrypt-file' 'get-requirements'
   "${DECOMPOSE_COMMON_PROCESSES[@]}" )
+
+_decompose-process-get-requirements() {
+  __check_requirements || exit 1
+  ansible-galaxy install -r "$(_decompose-project-root)/requirements.yml"
+}
+_decompose-process-get-requirements_help() {
+    echo "  Get requirements from Ansible Galaxy"
+}
 
 _decompose-process-run-playbook() {
   __check_requirements || exit 1
@@ -219,7 +227,7 @@ _decompose-process-view-encrypted-file_help() {
 
 __check_requirements() {
   local return_code
-  local checks=('ansible' 'ansible-playbook' 'ansible-vault')
+  local checks=('ansible' 'ansible-playbook' 'ansible-vault' 'ansible-galaxy')
 
   local check; for check in "${checks[@]}"; do
   command -v "$check" >/dev/null 2>&1 || {
