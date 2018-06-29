@@ -37,8 +37,7 @@ _decompose-process-run-playbook() {
     exit 1
   fi
 
-  local additional_params; additional_params=(${*:4})
-
+  local additional_params; additional_params=("${*:4}")
   ansible-playbook --vault-password-file="$VAULT_PASS_FILE" "$playbook" -i "$(_decompose-project-root)/$inventory" \
     --limit="$host_pattern" "${additional_params[@]}"
 }
@@ -68,8 +67,7 @@ _decompose-process-ansible() {
     exit 1
   fi
 
-  local additional_params; additional_params=(${*:2})
-
+  local additional_params; additional_params=("${*:2}")
   ansible --vault-password-file="$VAULT_PASS_FILE" -i "$inventory" "${additional_params[@]}"
 }
 _decompose-process-ansible_help() {
@@ -90,8 +88,7 @@ _decompose-process-encrypt-string() {
     exit 1
   fi
 
-  local additional_params; additional_params=(${*:2})
-
+  local additional_params; additional_params=("${*:2}")
   ansible-vault --vault-password-file="$VAULT_PASS_FILE" encrypt_string "$1" "${additional_params[@]}"
 }
 _decompose-process-encrypt-string_help() {
@@ -101,7 +98,7 @@ _decompose-process-encrypt-string_help() {
 
 _decompose-process-decrypt-string() {
   __check_requirements || exit 1
-  local additional_params; additional_params=(${*:1})
+  local additional_params; additional_params=("${*:1}")
 
   echo "Please enter ciphertext string to decrypt:"
 
@@ -114,7 +111,7 @@ _decompose-process-decrypt-string() {
   done <<< "$cipher_body")
 
   t=$(mktemp)
-  echo -e "$cipher_head_trimmed\n$cipher_body_trimmed" > "$t"
+  echo -e "$cipher_head_trimmed\\n$cipher_body_trimmed" > "$t"
 
   echo ""
   ansible-vault --vault-password-file="$VAULT_PASS_FILE" decrypt "$t" --output=/dev/stderr "${additional_params[@]}" > /dev/null
@@ -139,7 +136,7 @@ _decompose-process-ansible-vault-file() {
     return 1
   fi
 
-  local additional_params; additional_params=(${*:3})
+  local additional_params; additional_params=("${*:3}")
 
   case "$c" in
     "create" | "edit" | "encrypt" | "decrypt" | "view")
@@ -224,13 +221,11 @@ __check_requirements() {
   local return_code
   local checks=('ansible' 'ansible-playbook' 'ansible-vault')
 
-  local check; for check in ${checks[@]}; do
-    which $check >/dev/null 2>&1
-    if [ "$?" -ne "0" ]; then
+  local check; for check in "${checks[@]}"; do
+  command -v "$check" >/dev/null 2>&1 || {
       echo "'$check' command is missing"
       return_code=1
-      if [ "$check" == "which" ]; then break; fi
-    fi
+    }
   done
 
   return $return_code
