@@ -148,7 +148,7 @@ _decompose-process-ansible-vault-file() {
 
   case "$c" in
     "create" | "edit" | "encrypt" | "decrypt" | "view")
-      ansible-vault --vault-password-file="$VAULT_PASS_FILE" "$c" "$f" "${additional_params[@]}"
+      ansible-vault "$c" --vault-password-file="$VAULT_PASS_FILE" "$f" "${additional_params[@]}"
       ;;
     *)
       echo "$c is not a valid command"
