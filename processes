@@ -118,11 +118,8 @@ _decompose-process-decrypt-string() {
     echo -n "$line" | sed 's/^ *//;s/ *$//'
   done <<< "$cipher_body")
 
-  t=$(mktemp)
-  echo -e "$cipher_head_trimmed\\n$cipher_body_trimmed" > "$t"
-
   echo ""
-  ansible-vault --vault-password-file="$VAULT_PASS_FILE" decrypt "$t" --output=/dev/stderr "${additional_params[@]}" > /dev/null
+  echo -e "$cipher_head_trimmed\\n$cipher_body_trimmed" | ansible-vault decrypt --vault-pass-file="$VAULT_PASS_FILE"  "${additional_params[@]}"
   echo ""
 }
 _decompose-process-decrypt-string_help() {
